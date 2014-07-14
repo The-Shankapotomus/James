@@ -1,4 +1,4 @@
- #Twisted Imports
+#Twisted Imports
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 from twisted.python import log
@@ -16,13 +16,13 @@ class Command:
         
         setup = self.settings()
         
-        self.factory = FlagBotFactory(str(setup['Channel']), reactor)
+        self.factory = FlagBotFactory(str(setup['Channel']), str(setup['Nickname']), reactor)
         reactor.connectTCP(setup['Server'], int(setup['Port']) , self.factory)
     
     #Imports settings from an XML file
     def settings(self):
         
-        presets = minidom.parse("settings.xml")
+        presets = minidom.parse("Locale\\settings.xml")
 
         values = {'Nickname': None, 'Server': None, 'Port': None, 'Channel': None}
         

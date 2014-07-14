@@ -12,8 +12,8 @@ class Playground:
     def process(self, message):
         
         rval = None
-        badWords = open('badWords.txt', 'r')
-        promptList = open('promptList.txt', 'r')
+        badWords = open('Prompts\\badWords.txt', 'r')
+        promptList = open('Prompts\\promptList.txt', 'r')
         #eggList = open('eggList.txt', 'r')
         #chatScript = open('chatScript', 'r')
         
@@ -48,15 +48,13 @@ class Playground:
             
     def mathQuestion(self):
 
-        cache = open('cache.txt', 'a')
+        cache = open('Locale\\cache.txt', 'a')
         
         i = randint(1, 10)
         
-        question = "Solve this to get a flag: " + linecache.getline('mathQuestions.txt', i)
-        prompt = "Answer by typing, 'Answer: answer_here'\n"
-        answer = linecache.getline('mathAnswers.txt' , i)
+        question = "Solve this to get a flag: " + linecache.getline('Challenges\\mathQuestions.txt', i)
+        answer = linecache.getline('Challenges\\mathAnswers.txt' , i)
         
-        cache.write(prompt)
         cache.write(question)
         cache.write(answer)
         

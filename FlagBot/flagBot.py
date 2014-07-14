@@ -15,23 +15,18 @@ from playground import Playground
 log.startLogging(sys.stdout)
 
 class FlagBot(irc.IRCClient):
-    
-    def __init__(self, swings):
+
+    def __init__(self, nickname, swings):
         
         self.swings = swings
+        self.nickname = nickname
         
     #Creates and sets a new nickname 
     def setNick(self, nickname):
         
-        nickname = self.id_generator()
-        irc.IRCClient.setNick(self, nickname)
-        
-    
-    #Generates a random id for bots
-    def id_generator(self, size=6, chars=string.ascii_uppercase + string.digits):
-        
-        return ''.join(random.choice(chars) for x in range(size))
-      
+       nickname = self.nickname
+       irc.IRCClient.setNick(self, nickname)
+       
     #Called once connection is established
     def connectionMade(self):
         
@@ -88,32 +83,19 @@ class FlagBot(irc.IRCClient):
             vals = self.openCache()
             
             self.msg(user, vals[0])
-            self.msg(user, vals[1])
-        
-            self.addTask(vals[2], user)
-            print vals[2]
-            queue = open('queue.txt', 'r')
-            x = queue.readlines()
-            print x
+
+            self.addTask(vals[1], user)
+
             self.clearCache()
         
         if msg.startswith(self.nickname + ": "):
             
-            self.say(("Hello " +user +"! I'm FlagBot!"), channel)
+            self.msg(("Hello " +user +"! I'm FlagBot!"), channel)
             
         elif msg.startswith("all: "):
             
-            self.say("I'm FlagBot!", channel, user)
+            self.msg("I'm FlagBot!", channel)
             
-    #Send a message to current channel
-    def say(self, m, channel):
-        
-        irc.IRCClient.say(self, channel, m)
-    
-    def msg(self, user, message, length = None):
-    
-        irc.IRCClient.msg(self, user, "%s" %(message))
-        
     #Bounces back into channel after being kicked
     def kickedFrom(self, channel, kicker, message):
         
@@ -133,7 +115,7 @@ class FlagBot(irc.IRCClient):
         
     def openCache(self):
         
-        cache = open('cache.txt', 'r')
+        cache = open('Locale\\cache.txt', 'r')
         
         vals = []
         
@@ -145,24 +127,24 @@ class FlagBot(irc.IRCClient):
     
     def clearCache(self):
     
-        open('cache.txt', 'w').close()
+        open('Locale\\cache.txt', 'w').close()
         
     def addTask(self, task, user = None):
         
-        queue = open('queue.txt', 'a')
+        queue = open('Locale\\queue.txt', 'a')
         
         queue.write(user + ' ' + task)
         
     def removeTask(self, task):
-        
+
         vals = self.getQueue()
-        queue = open('queue.txt', 'w')
-        print vals
+        queue = open('Locale\\queue.txt', 'w')
+
         for line in vals:
             
             if line == task:
                 
-                print ("Task (" + task + ") removed from queue.")
+                print ("[Task '%s' removed from queue.]" % task.rstrip('\n'))
                 
             elif line != task:
                 
@@ -172,18 +154,19 @@ class FlagBot(irc.IRCClient):
         
     def getQueue(self):
         
-        queue = open('queue.txt', 'r')
+        queue = open('Locale\\queue.txt', 'r')
         vals = queue.readlines()
-        print vals
         queue.close()
+
+        return vals
         
     def clearQueue(self):
         
-        open('queue.txt', 'w').close()
+        open('Locale\\queue.txt', 'w').close()
         
     def checkQueue(self, user, msg, channel):
         
-        queue = open('queue.txt', 'r')
+        queue = open('Locale\\queue.txt', 'r')
         
         for task in queue:
             
@@ -193,7 +176,7 @@ class FlagBot(irc.IRCClient):
 
                     self.msg(user, "Good Job, egg egg")
                     self.removeTask(task)
-                    print "Egg given to: " +user
+                    print ("[Egg given to: %s]" %user)
                     break
                 
                 elif user in task and msg not in task:
@@ -209,9 +192,10 @@ class FlagBot(irc.IRCClient):
 class FlagBotFactory(protocol.ClientFactory):
     
     #Constructor for FlagBotFactory
-    def __init__(self, channel, reactor):
+    def __init__(self, channel, nick, reactor):
         
         self.channel = channel
+        self.nickname = nick
         self.reactor = reactor
         self.bot = None
         
@@ -219,7 +203,7 @@ class FlagBotFactory(protocol.ClientFactory):
     def buildProtocol(self, addr):
         
         self.seesaw = Playground()
-        self.bot = FlagBot(self.seesaw)
+        self.bot = FlagBot(self.nickname, self.seesaw)
         self.bot.factory = self
         self.bot.reactor = self.reactor
         
