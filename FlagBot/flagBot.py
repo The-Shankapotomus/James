@@ -71,7 +71,12 @@ class FlagBot(irc.IRCClient):
         user = user.split('!', 1)[0]
         print ("<%s> %s" %(user, msg))
         
-        self.checkQueue(user, msg, channel)
+        tasks = self.swings.checkQueue(user, msg, channel)
+        if tasks:
+            self.msg(tasks[0], tasks[1])
+        else:
+            pass
+        
         command = self.swings.process(msg)
         
         if(command == 'nimc'):
@@ -80,21 +85,21 @@ class FlagBot(irc.IRCClient):
             
         elif(command == 'mathQ'):
             
-            vals = self.openCache()
+            vals = self.swings.openCache()
             
             self.msg(user, vals[0])
 
-            self.addTask(vals[1], user)
+            self.swings.addTask(vals[1], user)
 
-            self.clearCache()
+            self.swings.clearCache()
         
         if msg.startswith(self.nickname + ": "):
             
-            self.msg(("Hello " +user +"! I'm FlagBot!"), channel)
+            self.msg(channel, ("Hello " +user +"! I'm FlagBot!"))
             
         elif msg.startswith("all: "):
             
-            self.msg("I'm FlagBot!", channel)
+            self.msg(channel, "I'm FlagBot!")
             
     #Bounces back into channel after being kicked
     def kickedFrom(self, channel, kicker, message):
@@ -113,81 +118,6 @@ class FlagBot(irc.IRCClient):
             
         irc.IRCClient.kick(self, channel, user, reason)
         
-    def openCache(self):
-        
-        cache = open('Locale\\cache.txt', 'r')
-        
-        vals = []
-        
-        for line in cache:
-            
-            vals.append(line)
-            
-        return vals
-    
-    def clearCache(self):
-    
-        open('Locale\\cache.txt', 'w').close()
-        
-    def addTask(self, task, user = None):
-        
-        queue = open('Locale\\queue.txt', 'a')
-        
-        queue.write(user + ' ' + task)
-        
-    def removeTask(self, task):
-
-        vals = self.getQueue()
-        queue = open('Locale\\queue.txt', 'w')
-
-        for line in vals:
-            
-            if line == task:
-                
-                print ("[Task '%s' removed from queue.]" % task.rstrip('\n'))
-                
-            elif line != task:
-                
-                queue.write(line)
-        
-        queue.close()
-        
-    def getQueue(self):
-        
-        queue = open('Locale\\queue.txt', 'r')
-        vals = queue.readlines()
-        queue.close()
-
-        return vals
-        
-    def clearQueue(self):
-        
-        open('Locale\\queue.txt', 'w').close()
-        
-    def checkQueue(self, user, msg, channel):
-        
-        queue = open('Locale\\queue.txt', 'r')
-        
-        for task in queue:
-            
-            try:
-            
-                if user in task and msg in task:
-
-                    self.msg(user, "Good Job, egg egg")
-                    self.removeTask(task)
-                    print ("[Egg given to: %s]" %user)
-                    break
-                
-                elif user in task and msg not in task:
-
-                    self.msg(user, "Sorry charlie,")
-                    self.removeTask(task)
-                    break
-                    
-            except IndexError:
-                
-                pass
         
 class FlagBotFactory(protocol.ClientFactory):
     
