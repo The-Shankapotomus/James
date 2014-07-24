@@ -16,7 +16,6 @@ class Playground:
         rval = None
         badWords = open('Prompts\\badWords.txt', 'r')
         promptList = open('Prompts\\promptList.txt', 'r')
-        #eggList = open('eggList.txt', 'r')
         
         #Check if someone curses
         for word in badWords:
@@ -44,7 +43,16 @@ class Playground:
                     self.physicalTask()
                     rval = 'phyTask'
                     break
-        
+                """
+                elif i == 3:
+                    #add task
+                    
+                elif i == 4
+                    #add task
+                
+                elif i == 5
+                    #add task
+                """
         badWords.close()
         promptList.close()          
         return rval
@@ -185,6 +193,7 @@ class Playground:
         
     def checkQueue(self, user, msg, channel):
         
+        #eggList = open('eggList.txt', 'r')
         queue = open('Locale\\queue.txt', 'r')
         eggStatus = []
         
