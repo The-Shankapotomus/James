@@ -6,6 +6,8 @@ from twisted.python import log
 #Standard Imports
 from random import randint 
 import linecache
+import time
+from ConfigParser import ConfigParser
 
 class Playground:
     
@@ -15,7 +17,6 @@ class Playground:
         badWords = open('Prompts\\badWords.txt', 'r')
         promptList = open('Prompts\\promptList.txt', 'r')
         #eggList = open('eggList.txt', 'r')
-        #chatScript = open('chatScript', 'r')
         
         #Check if someone curses
         for word in badWords:
@@ -40,12 +41,64 @@ class Playground:
                 
                 elif i == 2:
                     
-                    self.mathQuestion()
-                    rval = 'mathQ'
+                    self.physicalTask()
+                    rval = 'phyTask'
                     break
-                    
+        
+        badWords.close()
+        promptList.close()          
         return rval
+    
+    def chat(self, user, origMsg, nick):
+        
+        m= origMsg.replace(nick, '')
+        message = " ".join(m.split())
+        msg = ""
+        
+        symbols = open('Prompts\\symbols.txt', 'r')
+        
+        for char in symbols:
             
+            if char.rstrip('\n') in message:
+                
+                msg = message.replace(char.rstrip('\n'), "")
+                message = " ".join(msg.split())
+                
+        symbols.close() 
+        
+        script = ConfigParser()
+        script.read("Prompts\\chatScript.ini")
+        
+        sections = script.sections()
+        response = ""
+        
+        for section in sections:
+            
+            for option in script.options(section):
+
+                val = script.get(section, option)
+                
+                # 'in' or '==' dont know how to handle perfectly just yet
+                if val == message:
+                    
+                    response = self.respond(section)
+                
+        if response == "":
+            
+            response = self.respond('unknown')
+            
+        return response
+                
+    def respond(self, section):
+        
+        script = ConfigParser()
+        script.read("Prompts\\responseScript.ini")
+        
+        i = randint(1, len(script.options(section)))
+        response = script.get(section, str(i))
+             
+        return response
+           
     def mathQuestion(self):
 
         cache = open('Locale\\cache.txt', 'a')
@@ -57,6 +110,20 @@ class Playground:
         
         cache.write(question)
         cache.write(answer)
+        cache.close()
+        
+    def physicalTask(self):
+        
+        cache = open('Locale\\cache.txt', 'a')
+        
+        i = randint(1,5)
+        
+        question = "Do the task within 5 minutes. Josh or Fox will give you a flag once its done. Task: " + linecache.getline('Challenges\\phyTasks.txt', i)
+        answer = 'Manual'
+        
+        cache.write(question)
+        cache.write(answer)
+        cache.close()
         
     def getQueue(self):
         
@@ -122,7 +189,13 @@ class Playground:
         eggStatus = []
         
         for task in queue:
-            
+                
+                if task == 'Manual':
+                    
+                    eggStatus.extend([user, "Finish the job to get the egg."])
+                    self.removeTask(task)
+                    break
+                
                 if user in task and msg in task:
 
                     eggStatus.extend([user, "Good Job. Egg here."])
@@ -142,7 +215,3 @@ class Playground:
         queue.close()
                 
         return eggStatus
-
-        
-
-        

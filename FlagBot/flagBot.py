@@ -7,7 +7,7 @@ from twisted.python import log
 import time
 import sys
 import string
-import random
+from random import randint
 
 #Playgorund Import
 from playground import Playground
@@ -93,14 +93,40 @@ class FlagBot(irc.IRCClient):
 
             self.swings.clearCache()
         
-        if msg.startswith(self.nickname + ": "):
+        elif(command == 'phyTask'):
             
-            self.msg(channel, ("Hello " +user +"! I'm FlagBot!"))
+            vals = self.swings.openCache()
             
-        elif msg.startswith("all: "):
+            self.msg(user, vals[0])
             
-            self.msg(channel, "I'm FlagBot!")
+            self.swings.addTask(vals[1], user)
             
+            self.swings.clearCache()
+        
+        if self.nickname in msg:
+            
+            response = self.swings.chat(user, msg, self.nickname)
+            response = user + ': ' + response
+            time.sleep(randint(4,9))
+            print "<Response> " + response
+            self.msg(channel, response)
+            
+        if (user == 'Fox' or user == 'Josh') and msg.startswith('!'):
+            
+            action = msgParts[0]
+            channel = msgParts[1]
+            
+            opActions = ['!join', '!leave']
+            
+            if action == opActions[0]:
+                
+                self.join(channel)
+            
+            elif action == opActions[1]:
+                
+                self.msg(channel, "Bye.")
+                self.part(channel)
+                
     #Bounces back into channel after being kicked
     def kickedFrom(self, channel, kicker, message):
         
@@ -115,7 +141,7 @@ class FlagBot(irc.IRCClient):
         
         if(reason == 'nimc'):
             self.say("No cursing in my channel, you lil' fucking cunt.", channel)
-            
+            print "[%s was kicked for offensive language.]" %user
         irc.IRCClient.kick(self, channel, user, reason)
         
         
@@ -148,4 +174,4 @@ class FlagBotFactory(protocol.ClientFactory):
     #Called if the client fails to connec to server
     def clientConnectionFailed(self, connector, reason):
         
-        print "Connection Failed: " + str(reason)        
+        print "Connection Failed: " + str(reason)
